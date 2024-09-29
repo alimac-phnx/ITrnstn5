@@ -30,22 +30,21 @@ namespace ITrnstn5.Data
 
         private static List<FakeUser> GenerateTableSet(int pageNumber)
         {
-            int startIndex = (pageNumber - 1) * 20 + 1;
             List<FakeUser> fakeusers = new List<FakeUser>();
 
             for (int i = 0; i < 20; i++)
             {
-                fakeusers.Add(GenerateUser(startIndex + i));
+                fakeusers.Add(GenerateUser(pageNumber, i));
             }
 
             return fakeusers;
         }
 
-        private static FakeUser GenerateUser(int number)
+        private static FakeUser GenerateUser(int pageNumber, int i)
         {
             return new FakeUser
             {
-                Number = number,
+                Number = (pageNumber - 1) * 20 + i + 1,
                 Id = Guid.NewGuid().ToString(),
                 Name = Faker.Name.FullName(),
                 Address = Faker.Address.FullAddress(),
