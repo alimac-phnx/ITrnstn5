@@ -1,0 +1,69 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.btn-no-border {
+    border: none;
+    background-color: transparent;
+    padding: 0;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Уменьшено расстояние между элементами в группе */
+    margin-right: 30px; /* Отступ между группами */
+}
+
+.form-group label {
+    margin-bottom: 0;
+}
+
+#region {
+    width: 200px; /* Длина поля региона */
+}
+
+#errorRate {
+    width: 200px; /* Длина ползунка */
+}
+
+#errorRateNumber, #seed {
+    width: 100px; /* Длина полей для ввода ошибок и сида */
+}
+
+#randomSeed {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 40px;
+}
+
+.container {
+    width: 100%; /* Ширина контейнера */
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between; /* Распределение по ширине */
+    align-items: center; /* Выравнивание по вертикали */
+}

@@ -1,0 +1,187 @@
+﻿@model List<ITrnstn5.Models.FakeUser>
+<div class="container mt-3">
+    <form id="generateForm">
+        <input type="hidden" id="pageNumber" name="pageNumber" value="1">
+
+        <div class="controls mb-3">
+            <div class="form-group">
+                <label for="region">Region:</label>
+                <select id="region" name="region" class="form-select">
+                    <option value="en_US">USA</option>
+                    <option value="el">Greek</option>
+                    <option value="de">German</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="errorRate">Errors:</label>
+                <input type="range" id="errorRate" min="0" max="10" step="0.25" value="0">
+                <input type="number" id="errorRateNumber" name="errorRate" class="form-control" min="0" max="1000" step="0.25" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="seed">Seed:</label>
+                <input type="text" id="seed" name="seed" class="form-control" value="12345">
+                <button type="button" id="randomSeed" class="btn btn-primary">
+                    <i class="bi bi-shuffle"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <button type="button" id="exportCsv" class="btn btn-success">Export to CSV</button>
+            </div>
+        </div>
+    </form>
+
+    <div id="dataContainer">
+        <table id="fakeDataTable" class="table">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            @await Html.PartialAsync("_FakeDataPartial", Model)
+        </table>
+        
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+
+<script>
+    const errorRateSlider = document.getElementById('errorRate');
+    const errorRateNumber = document.getElementById('errorRateNumber');
+
+    function syncSliderWithInput() {
+        errorRateNumber.value = errorRateSlider.value;
+    }
+
+    function syncInputWithSlider() {
+        if (errorRateNumber.value > 1000) {
+            errorRateNumber.value = 1000;
+        } else if (errorRateNumber.value < 0) {
+            errorRateNumber.value = 0;
+        }
+        errorRateSlider.value = errorRateNumber.value > 10 ? 10 : errorRateNumber.value;
+    }
+
+    errorRateSlider.addEventListener('input', syncSliderWithInput);
+    errorRateNumber.addEventListener('input', syncInputWithSlider);
+
+    syncSliderWithInput();
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("generateForm");
+
+        function updateData() {
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+
+            fetch(`/FakeData/LoadData?${params.toString()}`)
+                .then(response => response.text())
+                .then(data => {
+                    const tbody = document.querySelector("#fakeDataTable tbody");
+                    tbody.innerHTML = null;
+                    tbody.innerHTML += data;
+                })
+                .catch(error => console.error('Ошибка при загрузке данных:', error));
+        }
+
+        document.getElementById("randomSeed").addEventListener("click", function () {
+            const randomSeed = Math.floor(Math.random() * 100000) + 1;
+
+            document.getElementById("seed").value = randomSeed;
+
+            updateData();
+        });
+
+        function sendTableData() {
+            let rows = document.querySelectorAll("#fakeDataTable tbody tr");
+            let tableData = [];
+
+            rows.forEach(row => {
+                let rowData = {
+                    number: row.cells[0].innerText,
+                    id: row.cells[1].innerText,
+                    name: row.cells[2].innerText,
+                    address: row.cells[3].innerText,
+                    phone: row.cells[4].innerText
+                };
+                tableData.push(rowData);
+            });
+
+            let errorRate = document.getElementById("errorRateNumber").value;
+
+            let requestData = {
+                errorRate: parseFloat(errorRate),
+                tableData: tableData
+            };
+
+            fetch('/FakeData/ApplyErrors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => response.text())
+                .then(data => {
+                    const tbody = document.querySelector("#fakeDataTable tbody");
+                    tbody.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.getElementById("region").addEventListener("change", updateData);
+        document.getElementById("errorRate").addEventListener("input", sendTableData);
+        document.getElementById("errorRateNumber").addEventListener("input", sendTableData);
+        document.getElementById("seed").addEventListener("change", updateData);
+    });
+</script>
+
+<script>
+
+    let isLoading = false;
+
+    function loadMoreData() {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        let pageNumberInput = document.getElementById("pageNumber");
+        let pageNumber = parseInt(pageNumberInput.value) + 1;
+        pageNumberInput.value = pageNumber;
+
+        const formData = new FormData(document.getElementById("generateForm"));
+
+        const params = new URLSearchParams(formData);
+
+        fetch(`/FakeData/LoadData?${params.toString()}`)
+            .then(response => response.text())
+            .then(data => {
+                const tbody = document.querySelector("#fakeDataTable tbody");
+                tbody.innerHTML += data;
+                isLoading = false;
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке данных:', error);
+                isLoading = false;
+            });
+    }
+
+    window.addEventListener('scroll', function () {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+            loadMoreData();
+        }
+    });
+</script>
+

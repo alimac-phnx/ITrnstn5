@@ -1,0 +1,14 @@
+﻿@model List<ITrnstn5.Models.FakeUser>
+
+<tbody>
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Number</td>
+            <td>@user.Id</td>
+            <td>@user.Name</td>
+            <td>@user.Address</td>
+            <td>@user.Phone</td>
+        </tr>
+    }
+</tbody>
